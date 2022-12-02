@@ -1,5 +1,4 @@
 class Player:
-
     def __init__(self, sign, who_plays: bool):
         self.human_or_pc = who_plays  # 0-pc, 1-human
         self.sign = sign
@@ -24,7 +23,7 @@ class Game:
         while True:
             try:
                 row = int(input("Unesite vrstu polja: "))
-                column = input("Unestie kolonu polja: ")
+                column = input("Unestie kolonu polja [A-Z]: ")
             except ValueError:
                 return False
             else:
@@ -59,7 +58,7 @@ class Game:
             else:
                 return False
         else:  # checking horizontal one
-            if row < 0 or row > N or m < 0 or m >= M-1:
+            if row < 0 or row > N or m < 0 or m >= M - 1:
                 return False
             if self.matrix[n][m] == ' ' and self.matrix[n][m + 1] == ' ':
                 return True
@@ -126,7 +125,6 @@ if __name__ == "__main__":
             continue
         else:
             break
-
 
     human_or_pc = bool(input("Igrac 1 je X...\nDa li je on covek ili racunar? (0-racunar, 1-covek): "))
     print("Igrac 2 je O")
