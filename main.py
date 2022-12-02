@@ -20,7 +20,15 @@ class Game:
         self.players_turn = self.player1
         self.print_table()
 
-    def play_a_turn(self, row, column):
+    def play_a_turn(self):
+        while True:
+            try:
+                row = int(input("Unesite vrstu polja: "))
+                column = input("Unestie kolonu polja: ")
+            except ValueError:
+                return False
+            else:
+                break
 
         if self.move_valid(row, column):
             m = ord(column) - 65
@@ -108,8 +116,17 @@ class Game:
 
 if __name__ == "__main__":
     print("### Game Domineering ###")
-    N = int(input("Unesite broj vrsta table: "))
-    M = int(input("Unesite broj kolona table: "))
+
+    while True:
+        try:
+            N = int(input("Unesite broj vrsta table: "))
+            M = int(input("Unesite broj kolona table: "))
+        except ValueError:
+            print("Nevalidan unos, pokusajte ponovo!")
+            continue
+        else:
+            break
+
 
     human_or_pc = bool(input("Igrac 1 je X...\nDa li je on covek ili racunar? (0-racunar, 1-covek): "))
     print("Igrac 2 je O")
@@ -123,12 +140,9 @@ if __name__ == "__main__":
             print("########################")
             break
         print("Igrac X je na potezu") if igrac1_na_potezu is True else print("Igrac O je na potezu")
-        n = int(input("Unesite vrstu polja: "))
-        m = input("Unestie kolonu polja (A-Z): ")
-        placed_correctly: bool = game.play_a_turn(n, m)
+
+        placed_correctly: bool = game.play_a_turn()
         while not placed_correctly:
             print("Nevalidan potez, pokusajte ponovo!")
-            n = int(input("Unesite vrstu polja: "))
-            m = input("Unestie kolonu polja: ")
-            placed_correctly: bool = game.play_a_turn(n, m)
+            placed_correctly: bool = game.play_a_turn()
         igrac1_na_potezu = not igrac1_na_potezu
