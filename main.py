@@ -51,7 +51,7 @@ class Game:
             else:
                 return False
         else:  # checking horizontal one
-            if row < 0 or row > N or m < 0 or m >= M:
+            if row < 0 or row > N or m < 0 or m >= M-1:
                 return False
             if self.matrix[n][m] == ' ' and self.matrix[n][m + 1] == ' ':
                 return True
