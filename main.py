@@ -5,7 +5,7 @@ class Player:
 
 
 class Game:
-    matrix: [[]]
+    matrix: None
     players_turn: Player
     player1: Player
     player2: Player
