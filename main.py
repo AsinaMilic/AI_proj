@@ -79,7 +79,6 @@ class Game:
         return True
 
     def print_table(self):
-
         letter = 65  # A
         # vrh table
         print(" ", end='')  # corner
