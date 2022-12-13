@@ -1,11 +1,16 @@
+import copy
+
 class Player:
     def __init__(self, sign, who_plays: bool):
         self.human_or_pc = who_plays  # 0-pc, 1-human
         self.sign = sign
+        self.all_available_states = []
+
 
 
 class Game:
     matrix: None
+    matrix_states: None
     players_turn: Player
     player1: Player
     player2: Player
@@ -14,12 +19,15 @@ class Game:
         self.N = n
         self.M = m
         self.matrix = [[" " for i in range(0, M)] for j in range(0, N)]  # [1,2,3 ... ,M+1]
+        self.matrix_states = []
+        self.add_new_state()
         self.player1 = Player("X", human_or_pc1)
         self.player2 = Player("O", True)  # 2.player is always human
         self.players_turn = self.player1
         self.print_table()
 
     def play_a_turn(self):
+        self.find_all_available_states()
         while True:
             try:
                 row = int(input("Unesite vrstu polja: "))
@@ -40,7 +48,11 @@ class Game:
                 self.matrix[n][m] = 'O'
                 self.matrix[n][m + 1] = 'O'
                 self.players_turn = self.player1
+            self.add_new_state()
             self.print_table()
+
+            #Da li zelimo da stampa sva stanja do sada
+            #self.print_states(self.matrix_states)
             return True
         else:
             return False
@@ -77,6 +89,60 @@ class Game:
                     if self.matrix[i][j] == ' ' and self.matrix[i][j + 1] == ' ':
                         return False
         return True
+
+    def find_all_available_states(self):
+        self.players_turn.all_available_states.clear()
+        if self.players_turn is self.player1:  # any two empty vertical spaces?
+            for i in range(0, self.N - 1):
+                for j in range(0, self.M):
+                    if self.matrix[i][j] == ' ' and self.matrix[i + 1][j] == ' ':
+                        self.matrix[i][j] = 'X'
+                        self.matrix[i + 1][j] = 'X'
+                        self.player1.all_available_states.append(copy.deepcopy(self.matrix))
+                        self.matrix[i][j] = ' '
+                        self.matrix[i + 1][j] = ' '
+        else:
+            for i in range(0, self.N):
+                for j in range(0, self.M - 1):
+                    if self.matrix[i][j] == ' ' and self.matrix[i][j + 1] == ' ':
+                        self.matrix[i][j] = 'O'
+                        self.matrix[i][j + 1] = 'O'
+                        self.player2.all_available_states.append(copy.deepcopy(self.matrix))
+                        self.matrix[i][j] = ' '
+                        self.matrix[i][j + 1] = ' '
+        #Da li zelimo da stampamo sve slobodne poteze
+        self.print_states(self.players_turn.all_available_states)
+
+    def add_new_state(self):
+        #Kopira trenutno stanje table i dodaje u listu stanja
+        self.matrix_states.append(copy.deepcopy(self.matrix))
+    def print_states(self,matrica):
+        #Stampa sva dosadasnja stanja u terminalu
+        for k in range(0,len(matrica)):
+            if(matrica==self.matrix_states):
+                print(f"State number {k}")
+            else:
+                print(f"Available move num. {k}")
+            letter = 65  # A
+            # vrh table
+            print(" ", end='')  # corner
+            for i in range(0, M):
+                print(f"   {chr(letter + i)}", end='')  # The end key will set the string that needs to be appended
+            print('')
+            print(" ", end='')
+            for i in range(0, M):
+                print("   =", end='')
+            print('')
+
+            for i in range(0, N):
+                print(f"{N - i}||", end='')
+                for j in range(0, M):  # counting backwards
+                    print(f" {matrica[k][i][j]} |", end='')
+                print(f"|{N - i}")
+                print("  ", end='')
+                for _ in range(0, M):
+                    print(" ---", end='')
+                print("  ")
 
     def print_table(self):
         letter = 65  # A
