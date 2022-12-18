@@ -14,20 +14,27 @@ class Game:
     players_turn: Player
     player1: Player
     player2: Player
+    print_ava_states: bool
 
-    def __init__(self, human_or_pc1, n: int, m: int):
+    def __init__(self, human_or_pc1, n: int, m: int, print_states: bool):
         self.N = n
         self.M = m
+        self.print_ava_states = print_states
         self.matrix = [[" " for i in range(0, M)] for j in range(0, N)]  # [1,2,3 ... ,M+1]
         self.matrix_states = []
         self.add_new_state()
         self.player1 = Player("X", human_or_pc1)
         self.player2 = Player("O", True)  # 2.player is always human
         self.players_turn = self.player1
-        self.print_table()
+        #self.print_table()
 
     def play_a_turn(self):
         self.find_all_available_states()
+        
+        if self.print_ava_states:
+            self.print_states(self.players_turn.all_available_states) #Da li zelimo da stampamo sve slobodne poteze
+        print("\nTrenutno stanje table")
+        self.print_table()
         while True:
             try:
                 row = int(input("Unesite vrstu polja: "))
@@ -49,9 +56,9 @@ class Game:
                 self.matrix[n][m + 1] = 'O'
                 self.players_turn = self.player1
             self.add_new_state()
-            self.print_table()
+            
 
-            #Da li zelimo da stampa sva stanja do sada
+            ############  Da li zelimo da stampa sva stanja do sada  ############
             #self.print_states(self.matrix_states)
             return True
         else:
@@ -110,19 +117,19 @@ class Game:
                         self.player2.all_available_states.append(copy.deepcopy(self.matrix))
                         self.matrix[i][j] = ' '
                         self.matrix[i][j + 1] = ' '
-        #Da li zelimo da stampamo sve slobodne poteze
-        self.print_states(self.players_turn.all_available_states)
+        
 
     def add_new_state(self):
-        #Kopira trenutno stanje table i dodaje u listu stanja
-        self.matrix_states.append(copy.deepcopy(self.matrix))
+        self.matrix_states.append(copy.deepcopy(self.matrix)) #Kopira trenutno stanje table i dodaje u listu stanja
+
+
     def print_states(self,matrica):
         #Stampa sva dosadasnja stanja u terminalu
-        for k in range(0,len(matrica)):
-            if(matrica==self.matrix_states):
-                print(f"State number {k}")
+        for k in range(0, len(matrica)):
+            if(matrica == self.matrix_states):
+                print(f"\nStanje igre: {k+1}")
             else:
-                print(f"Available move num. {k}")
+                print(f"\nSlobodan potez broj: {k+1}")
             letter = 65  # A
             # vrh table
             print(" ", end='')  # corner
@@ -143,6 +150,7 @@ class Game:
                 for _ in range(0, M):
                     print(" ---", end='')
                 print("  ")
+
 
     def print_table(self):
         letter = 65  # A
@@ -167,15 +175,7 @@ class Game:
                 print(" ---", end='')
             print("  ")
 
-        # bottom part of the table
-        # print(" ", end='')
-        # for i in range(0, M):
-        #   print("   =", end='')
-        # print("")
-        # print(" ", end='')  # corner
-        # for i in range(0, M):
-        #   print(f"   {chr(letter + i)}", end='')
-        # print("")
+
 
 
 if __name__ == "__main__":
@@ -192,17 +192,20 @@ if __name__ == "__main__":
             break
 
     human_or_pc = bool(input("Igrac 1 je X...\nDa li je on covek ili racunar? (0-racunar, 1-covek): "))
+    print_states = input("Da li zelite prikaz svih mogucih poteza? (0-Ne, 1-Da): ")
+    print_states = True if (print_states == '1' or print_states == 'Da' or print_states == 'da') else False
     print("Igrac 2 je O")
 
-    game = Game(human_or_pc, N, M)
+    game = Game(human_or_pc, N, M, print_states)
     igrac1_na_potezu = True
     while True:
         if game.is_game_over():
-            print("########################\nKraj igre!")
+            print("###############################\nKraj igre!")
+            game.print_table()
             print("Pobedio je 2. igrac - O!") if game.players_turn.sign == "X" else print("Pobedio je 1. igrac - X!")
-            print("########################")
+            print("###############################")
             break
-        print("Igrac X je na potezu") if igrac1_na_potezu is True else print("Igrac O je na potezu")
+        print("\nIgrac X je na potezu") if igrac1_na_potezu is True else print("Igrac O je na potezu")
 
         placed_correctly: bool = game.play_a_turn()
         while not placed_correctly:
