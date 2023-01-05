@@ -41,6 +41,9 @@ class Game:
                     if self.move_valid(row, column):
                         m = ord(column) - 65  # A -> 1
                         n = N - row
+                        self.matrix[n][m] = 'O'
+                        self.matrix[n][m + 1] = 'O'
+                        self.players_turn = self.player1
                     else:
                         return False
 
@@ -50,20 +53,12 @@ class Game:
                     break
         else:
             row, column = self.alpha_beta(5, False)
-            if self.move_valid(row, column):
-                m = column
-                n = N - row - 1
-            else:
-                return False
-
-        if self.players_turn is self.player1:
-            self.matrix[n][m] = 'X'
-            self.matrix[n - 1][m] = 'X'
+            self.place_item(row,column,False)
             self.players_turn = self.player2
-        else:
-            self.matrix[n][m] = 'O'
-            self.matrix[n][m + 1] = 'O'
-            self.players_turn = self.player1
+            #if self.move_valid(row-1, column):
+               # m = column
+               # n = N - row - 1
+
         self.add_new_state()
 
         ############  Da li zelimo da stampa sva stanja do sada  ############
@@ -85,11 +80,11 @@ class Game:
 
         #fi=0
         #fj=0
-        for i in range(self.N-1,0,-1):
+        for i in range(0,self.N):
             for j in range(0,self.M):
                 if self.place_item(i, j, dir):
                     e, ri, rj = self.alphabeta(recursivity-1, not dir, 0, 0, -beta, -alpha)
-                    e = not e
+                    e = - e
                     self.remove_item(i, j, dir)
                     if e > alpha:
                         alpha = e
@@ -102,22 +97,22 @@ class Game:
     def place_item(self,row, col, dir):
         col_m = 0
         row_m = 0
-        if dir:  #dir == Vertical == True? == 'O'
+        if not dir:  #dir == Vertical == False? == 'X'
             row_m = 1
         else:
             col_m = 1
 
-        if row-row_m < 0 or col+col_m >= self.M or self.matrix[row-row_m][col] != ' ' or self.matrix[row][col+col_m] != ' ':
+        if row+row_m >= self.N or col+col_m >= self.M or self.matrix[row+row_m][col] != ' ' or self.matrix[row][col+col_m] != ' ':
             return False
         else:
             self.matrix[row][col] = 'O' if dir else 'X'
-            self.matrix[row-row_m][col+col_m] = 'O' if dir else 'X'
+            self.matrix[row+row_m][col+col_m] = 'O' if dir else 'X'
             return True
 
     def remove_item(self, row, col, dir):
-        if dir:
+        if not dir:
             self.matrix[row][col] = ' '
-            self.matrix[row-1][col] = ' '
+            self.matrix[row+1][col] = ' '
         else:
             self.matrix[row][col] = ' '
             self.matrix[row][col+1] = ' '
@@ -181,7 +176,7 @@ class Game:
                         self.player2.all_available_states.append(copy.deepcopy(self.matrix))
                         self.matrix[i][j] = ' '
                         self.matrix[i][j + 1] = ' '
-                        broj_stanja+1
+                        broj_stanja+=1
         return broj_stanja
 
 
