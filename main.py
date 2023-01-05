@@ -6,8 +6,6 @@ class Player:
         self.sign = sign
         self.all_available_states = []
 
-
-
 class Game:
     matrix: None
     matrix_states: None
@@ -35,37 +33,101 @@ class Game:
             self.print_states(self.players_turn.all_available_states) #Da li zelimo da stampamo sve slobodne poteze
         print("\nTrenutno stanje table")
         self.print_table()
-        while True:
-            try:
-                row = int(input("Unesite vrstu polja: "))
-                column = input("Unestie kolonu polja [A-Z]: ")
-            except ValueError:
-                return False
-            else:
-                break
+        if self.players_turn is self.player2:  #player1 ce biti kompjuter
+            while True:
+                try:
+                    row = int(input("Unesite vrstu polja: "))
+                    column = input("Unestie kolonu polja [A-Z]: ")
+                    if self.move_valid(row, column):
+                        m = ord(column) - 65  # A -> 1
+                        n = N - row
+                    else:
+                        return False
 
-        if self.move_valid(row, column):
-            m = ord(column) - 65
-            n = N - row
-            if self.players_turn is self.player1:
-                self.matrix[n][m] = 'X'
-                self.matrix[n - 1][m] = 'X'
-                self.players_turn = self.player2
-            else:
-                self.matrix[n][m] = 'O'
-                self.matrix[n][m + 1] = 'O'
-                self.players_turn = self.player1
-            self.add_new_state()
-            
-
-            ############  Da li zelimo da stampa sva stanja do sada  ############
-            #self.print_states(self.matrix_states)
-            return True
+                except ValueError:
+                    return False
+                else:
+                    break
         else:
+            row, column = self.alpha_beta(5, False)
+            if self.move_valid(row, column):
+                m = column
+                n = N - row - 1
+            else:
+                return False
+
+        if self.players_turn is self.player1:
+            self.matrix[n][m] = 'X'
+            self.matrix[n - 1][m] = 'X'
+            self.players_turn = self.player2
+        else:
+            self.matrix[n][m] = 'O'
+            self.matrix[n][m + 1] = 'O'
+            self.players_turn = self.player1
+        self.add_new_state()
+
+        ############  Da li zelimo da stampa sva stanja do sada  ############
+        #self.print_states(self.matrix_states)
+        return True
+
+
+
+    def alpha_beta(self, RECURSIVITY :int , dir: bool): #dir = HORIZONTAL = False
+        #i=0
+        #j=0
+        print("computers turn using alpha beta")
+        e, i, j = self.alphabeta(RECURSIVITY, False, 0, 0, -self.N*self.M, self.N*self.M)
+        return i,j
+
+    def alphabeta(self,recursivity: int, dir: bool, ri, rj, alpha, beta):
+        if recursivity == 0:
+            return self.get_possibilities(dir) - self.get_possibilities(not dir), ri, rj
+
+        #fi=0
+        #fj=0
+        for i in range(self.N-1,0,-1):
+            for j in range(0,self.M):
+                if self.place_item(i, j, dir):
+                    e, ri, rj = self.alphabeta(recursivity-1, not dir, 0, 0, -beta, -alpha)
+                    e = not e
+                    self.remove_item(i, j, dir)
+                    if e > alpha:
+                        alpha = e
+                        ri = i
+                        rj = j
+                        if alpha >= beta:
+                            return beta, ri, rj
+
+        return alpha, ri, rj
+    def place_item(self,row, col, dir):
+        col_m = 0
+        row_m = 0
+        if dir:  #dir == Vertical == True? == 'O'
+            row_m = 1
+        else:
+            col_m = 1
+
+        if row-row_m < 0 or col+col_m >= self.M or self.matrix[row-row_m][col] != ' ' or self.matrix[row][col+col_m] != ' ':
             return False
+        else:
+            self.matrix[row][col] = 'O' if dir else 'X'
+            self.matrix[row-row_m][col+col_m] = 'O' if dir else 'X'
+            return True
+
+    def remove_item(self, row, col, dir):
+        if dir:
+            self.matrix[row][col] = ' '
+            self.matrix[row-1][col] = ' '
+        else:
+            self.matrix[row][col] = ' '
+            self.matrix[row][col+1] = ' '
+
 
     def move_valid(self, row, column):
-        m = ord(column) - 65  # A -> 1
+        if isinstance(column,str):
+            m = ord(column) - 65  # A -> 1
+        else:
+            m = column
         n = self.N - row  # inverted rows
 
         if self.players_turn is self.player1:  # checking if vertical one can be placed
@@ -97,6 +159,32 @@ class Game:
                         return False
         return True
 
+    def get_possibilities(self, dir: bool):  #moram lepo da proverim za dir
+        broj_stanja = 0
+        self.players_turn.all_available_states.clear()
+        if dir:  # any two empty vertical spaces?
+            for i in range(0, self.N - 1):
+                for j in range(0, self.M):
+                    if self.matrix[i][j] == ' ' and self.matrix[i + 1][j] == ' ':
+                        self.matrix[i][j] = 'X'
+                        self.matrix[i + 1][j] = 'X'
+                        self.player1.all_available_states.append(copy.deepcopy(self.matrix))
+                        self.matrix[i][j] = ' '
+                        self.matrix[i + 1][j] = ' '
+                        broj_stanja+=1
+        else:
+            for i in range(0, self.N):
+                for j in range(0, self.M - 1):
+                    if self.matrix[i][j] == ' ' and self.matrix[i][j + 1] == ' ':
+                        self.matrix[i][j] = 'O'
+                        self.matrix[i][j + 1] = 'O'
+                        self.player2.all_available_states.append(copy.deepcopy(self.matrix))
+                        self.matrix[i][j] = ' '
+                        self.matrix[i][j + 1] = ' '
+                        broj_stanja+1
+        return broj_stanja
+
+
     def find_all_available_states(self):
         self.players_turn.all_available_states.clear()
         if self.players_turn is self.player1:  # any two empty vertical spaces?
@@ -117,7 +205,9 @@ class Game:
                         self.player2.all_available_states.append(copy.deepcopy(self.matrix))
                         self.matrix[i][j] = ' '
                         self.matrix[i][j + 1] = ' '
-        
+
+
+
 
     def add_new_state(self):
         self.matrix_states.append(copy.deepcopy(self.matrix)) #Kopira trenutno stanje table i dodaje u listu stanja
